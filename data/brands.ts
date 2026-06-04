@@ -1,0 +1,62 @@
+// Famous brands reduced to their official-ish palettes. These are public brand
+// colours used here purely as swatches for a guessing game — no logos, just the
+// numbers. `category` can be shown as a gentle hint.
+export type BrandEntry = {
+  name: string;
+  category: string;
+  colors: string[];
+};
+
+export const BRANDS: BrandEntry[] = [
+  { name: "Spotify", category: "tech", colors: ["#1DB954", "#191414"] },
+  { name: "Coca-Cola", category: "food & drink", colors: ["#F40009", "#FFFFFF"] },
+  { name: "Pepsi", category: "food & drink", colors: ["#004B93", "#EB1933", "#FFFFFF"] },
+  { name: "Facebook", category: "tech", colors: ["#1877F2", "#FFFFFF"] },
+  { name: "Instagram", category: "tech", colors: ["#F58529", "#DD2A7B", "#8134AF", "#515BD4"] },
+  { name: "Twitter", category: "tech", colors: ["#1DA1F2", "#FFFFFF"] },
+  { name: "YouTube", category: "tech", colors: ["#FF0000", "#FFFFFF", "#282828"] },
+  { name: "Netflix", category: "media", colors: ["#E50914", "#221F1F"] },
+  { name: "Google", category: "tech", colors: ["#4285F4", "#EA4335", "#FBBC05", "#34A853"] },
+  { name: "Microsoft", category: "tech", colors: ["#F25022", "#7FBA00", "#00A4EF", "#FFB900"] },
+  { name: "Amazon", category: "tech", colors: ["#FF9900", "#232F3E"] },
+  { name: "McDonald's", category: "food & drink", colors: ["#FFC72C", "#DA291C"] },
+  { name: "Burger King", category: "food & drink", colors: ["#D62300", "#0033A0", "#FFA000"] },
+  { name: "Starbucks", category: "food & drink", colors: ["#00704A", "#FFFFFF"] },
+  { name: "Subway", category: "food & drink", colors: ["#008C15", "#FFC600"] },
+  { name: "KFC", category: "food & drink", colors: ["#B9322F", "#FFFFFF", "#F2C75C"] },
+  { name: "Twitch", category: "tech", colors: ["#9146FF", "#FFFFFF"] },
+  { name: "Discord", category: "tech", colors: ["#5865F2", "#FFFFFF"] },
+  { name: "Slack", category: "tech", colors: ["#36C5F0", "#2EB67D", "#ECB22E", "#E01E5A"] },
+  { name: "WhatsApp", category: "tech", colors: ["#25D366", "#075E54"] },
+  { name: "Snapchat", category: "tech", colors: ["#FFFC00", "#FFFFFF"] },
+  { name: "TikTok", category: "tech", colors: ["#000000", "#25F4EE", "#FE2C55"] },
+  { name: "LinkedIn", category: "tech", colors: ["#0A66C2", "#FFFFFF"] },
+  { name: "Pinterest", category: "tech", colors: ["#BD081C", "#FFFFFF"] },
+  { name: "Reddit", category: "tech", colors: ["#FF4500", "#FFFFFF"] },
+  { name: "FedEx", category: "logistics", colors: ["#4D148C", "#FF6600"] },
+  { name: "UPS", category: "logistics", colors: ["#351C15", "#FFB500"] },
+  { name: "DHL", category: "logistics", colors: ["#FFCC00", "#D40511"] },
+  { name: "IKEA", category: "retail", colors: ["#0058A3", "#FFDA1A"] },
+  { name: "LEGO", category: "retail", colors: ["#DA291C", "#FFCF00", "#000000"] },
+  { name: "Ferrari", category: "automotive", colors: ["#FF2800", "#FFF200", "#000000"] },
+  { name: "BMW", category: "automotive", colors: ["#0066B1", "#FFFFFF", "#000000"] },
+  { name: "Volkswagen", category: "automotive", colors: ["#001E50", "#00B1EB"] },
+  { name: "Shell", category: "energy", colors: ["#FBCE07", "#DD1D21"] },
+  { name: "Visa", category: "finance", colors: ["#1A1F71", "#F7B600"] },
+  { name: "Mastercard", category: "finance", colors: ["#EB001B", "#FF5F00", "#F79E1B"] },
+  { name: "PayPal", category: "finance", colors: ["#003087", "#0070E0"] },
+  { name: "Red Bull", category: "food & drink", colors: ["#001489", "#DB0A40", "#FFC906"] },
+  { name: "Heineken", category: "food & drink", colors: ["#008200", "#ED1C24"] },
+  { name: "Cadbury", category: "food & drink", colors: ["#4E2A84", "#FFFFFF"] },
+  { name: "Tiffany & Co.", category: "retail", colors: ["#0ABAB5", "#FFFFFF"] },
+  { name: "Barbie", category: "retail", colors: ["#E0218A", "#FFFFFF"] },
+  { name: "Nintendo", category: "gaming", colors: ["#E60012", "#FFFFFF"] },
+  { name: "PlayStation", category: "gaming", colors: ["#003791", "#0070D1"] },
+  { name: "Xbox", category: "gaming", colors: ["#107C10", "#FFFFFF"] },
+  { name: "Android", category: "tech", colors: ["#3DDC84", "#FFFFFF"] },
+  { name: "Firefox", category: "tech", colors: ["#FF7139", "#B833E1", "#FFCB39"] },
+  { name: "Airbnb", category: "tech", colors: ["#FF5A5F", "#FFFFFF"] },
+  { name: "Dropbox", category: "tech", colors: ["#0061FF", "#FFFFFF"] },
+  { name: "Fanta", category: "food & drink", colors: ["#FF8200", "#0033A0"] },
+  { name: "Sprite", category: "food & drink", colors: ["#008C44", "#FFFFFF"] },
+];
