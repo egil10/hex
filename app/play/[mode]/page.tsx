@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { GameClient } from "@/components/game/game-client";
+import { PlayClient } from "@/components/game/play-client";
 import { MODE_IDS, MODE_MAP, isModeId } from "@/lib/modes";
 
 export function generateStaticParams() {
@@ -17,18 +17,15 @@ export async function generateMetadata({
   const { mode } = await params;
   if (!isModeId(mode)) return { title: "HEX — the colour quiz" };
   const m = MODE_MAP[mode];
-  return {
-    title: `${m.title} — HEX colour quiz`,
-    description: m.blurb,
-  };
+  return { title: `${m.title} — HEX colour quiz`, description: m.blurb };
 }
 
-export default async function PlayPage({
+export default async function PlayModePage({
   params,
 }: {
   params: Promise<{ mode: string }>;
 }) {
   const { mode } = await params;
   if (!isModeId(mode)) notFound();
-  return <GameClient mode={mode} />;
+  return <PlayClient initial={[mode]} />;
 }

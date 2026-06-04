@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Palette, ChevronRight, Sigma } from "lucide-react";
+import { Palette, ChevronRight, Sigma, Sparkles, Play } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { MODES } from "@/lib/modes";
 import { getBestScore } from "@/lib/use-game";
@@ -11,44 +11,64 @@ import { NAMED_COLORS } from "@/data/colors";
 import { FLAGS } from "@/data/flags";
 import { BRANDS } from "@/data/brands";
 
-export function Home() {
+export function About() {
   const [best, setBest] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    const next: Record<string, number> = {};
+    const next: Record<string, number> = { ultimate: getBestScore("ultimate") };
     for (const m of MODES) next[m.id] = getBestScore(m.id);
     setBest(next);
   }, []);
 
   return (
     <main className="min-h-dvh">
-      {/* hero */}
       <section className="grain border-b border-border">
         <div className="mx-auto max-w-5xl px-6 pb-16 pt-7">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs text-muted">
+            <Link href="/" className="flex items-center gap-2 text-xs text-muted transition-colors hover:text-fg">
               <Palette className="h-4 w-4 text-accent" />
-              <span>colour quiz</span>
+              <span className="font-medium text-fg">hex</span>
               <span className="text-border">·</span>
-              <span>{MODES.length} modes</span>
+              <span>colour quiz</span>
+            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/"
+                className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3.5 py-1.5 text-xs font-medium text-white transition-opacity hover:opacity-90"
+              >
+                <Play className="h-3.5 w-3.5" /> play
+              </Link>
+              <ThemeToggle />
             </div>
-            <ThemeToggle />
           </div>
 
           <h1 className="mt-10 max-w-2xl text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
             how well do you <span className="text-accent">actually see</span> colour?
           </h1>
           <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted">
-            Eight small games. Guess the hex from a swatch, drag sliders to match an RGB,
-            name the shade, spot a brand from its palette. Every guess is scored by{" "}
-            <span className="text-fg">ΔE</span> — the distance between two colours measured as
-            vectors in CIELAB space. Lower distance, higher score.
+            A pile of small games — guess the hex from a swatch, drag sliders to match an RGB,
+            spot the exact twin, name the shade, place a brand from its palette. Every guess is
+            scored by <span className="text-fg">ΔE</span>: the distance between two colours
+            measured as vectors in CIELAB space. Lower distance, higher score.
           </p>
+
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+            >
+              <Sparkles className="h-4 w-4" /> play the ultimate game
+            </Link>
+            {best.ultimate > 0 && (
+              <span className="font-mono text-xs tabular-nums text-muted">
+                your best <span className="text-fg">{best.ultimate.toLocaleString()}</span>
+              </span>
+            )}
+          </div>
         </div>
       </section>
 
       <div className="mx-auto max-w-5xl px-6">
-        {/* stat strip, pulled up over the hero seam */}
         <div className="-mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
           <StatCard value={String(MODES.length)} label="game modes" highlight />
           <StatCard value={String(NAMED_COLORS.length)} label="named colours" />
@@ -56,9 +76,8 @@ export function Home() {
           <StatCard value={String(BRANDS.length)} label="brands" />
         </div>
 
-        {/* modes */}
         <div className="mt-12 flex items-baseline justify-between">
-          <h2 className="text-sm font-medium">pick a mode</h2>
+          <h2 className="text-sm font-medium">or play a single mode</h2>
           <span className="text-xs text-muted">scores save to this browser</span>
         </div>
 
@@ -84,9 +103,7 @@ export function Home() {
                   </div>
                   <Difficulty n={m.difficulty} />
                 </div>
-
                 <p className="mt-3 text-xs leading-relaxed text-muted">{m.blurb}</p>
-
                 <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
                   <span className="text-[10px] uppercase tracking-wider text-muted">
                     {m.kind === "precision" ? "ΔE scored" : "multiple choice"}
@@ -107,16 +124,15 @@ export function Home() {
           })}
         </div>
 
-        {/* scoring explainer */}
         <div className="mt-10 rounded-xl border border-border bg-surface p-5">
           <h3 className="flex items-center gap-2 text-sm font-medium">
             <Sigma className="h-4 w-4 text-accent" /> how it&apos;s scored
           </h3>
           <p className="mt-2 max-w-2xl text-xs leading-relaxed text-muted">
             A colour is just a point in space. We convert each hex to{" "}
-            <span className="text-fg">CIELAB</span> coordinates — a space built so that distances
-            match what your eyes perceive — then measure the straight-line distance (the norm of
-            the difference vector) between your guess and the target. That number is{" "}
+            <span className="text-fg">CIELAB</span> coordinates — a space built so distances match
+            what your eyes perceive — then measure the straight-line distance (the norm of the
+            difference vector) between your guess and the target. That number is{" "}
             <span className="text-fg">ΔE</span>:
           </p>
           <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
@@ -127,9 +143,11 @@ export function Home() {
           </div>
         </div>
 
-        {/* footer */}
         <footer className="mt-14 border-t border-border py-8 text-center text-xs text-muted">
-          no accounts, no ads, no tracking — just you and the colours.
+          no accounts, no ads, no tracking — just you and the colours.{" "}
+          <Link href="/" className="text-accent transition-opacity hover:opacity-80">
+            play →
+          </Link>
         </footer>
       </div>
     </main>
@@ -153,10 +171,7 @@ function StatCard({
       )}
     >
       <div
-        className={cn(
-          "font-mono text-2xl font-semibold tabular-nums",
-          highlight && "text-accent",
-        )}
+        className={cn("font-mono text-2xl font-semibold tabular-nums", highlight && "text-accent")}
       >
         {value}
       </div>

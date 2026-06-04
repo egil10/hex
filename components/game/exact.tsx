@@ -21,28 +21,21 @@ type Round = { target: RGB; options: Option[]; correct: number };
 
 function makeRound(): Round {
   const target = randomVividRgb();
-  for (let attempt = 0; attempt < 60; attempt++) {
-    const mags = [
-      8 + Math.random() * 7,
-      34 + Math.random() * 16,
-      54 + Math.random() * 16,
-      76 + Math.random() * 20,
-    ];
-    const cands = mags.map((m) => nudge(target, m));
-    const des = cands.map((c) => deltaE(target, c));
-    const order = des.map((d, i) => ({ d, i })).sort((a, b) => a.d - b.d);
-    if (order[0].d < 16 && order[0].d * 1.5 < order[1].d) {
-      const idx = shuffle([0, 1, 2, 3]);
-      const options = idx.map((i) => ({ rgb: cands[i], dE: des[i] }));
-      return { target, options, correct: idx.indexOf(order[0].i) };
-    }
+  // three near-misses, all a hair off, plus the exact match
+  const near: RGB[] = [];
+  let guard = 0;
+  while (near.length < 3 && guard++ < 100) {
+    const c = nudge(target, 4 + Math.random() * 6);
+    const d = deltaE(target, c);
+    if (d > 1 && near.every((n) => deltaE(n, c) > 0.5)) near.push(c);
   }
-  const cands = [nudge(target, 10), nudge(target, 45), nudge(target, 65), nudge(target, 90)];
-  const des = cands.map((c) => deltaE(target, c));
-  return { target, options: cands.map((rgb, i) => ({ rgb, dE: des[i] })), correct: 0 };
+  while (near.length < 3) near.push(nudge(target, 6)); // fallback
+  const cands = shuffle([target, ...near]);
+  const options = cands.map((rgb) => ({ rgb, dE: deltaE(target, rgb) }));
+  return { target, options, correct: cands.indexOf(target) };
 }
 
-export function ClosestRound({ onAnswer, phase }: RoundProps) {
+export function ExactRound({ onAnswer, phase }: RoundProps) {
   const [round] = useState(makeRound);
   const [picked, setPicked] = useState<number | null>(null);
   const playing = phase === "playing";
@@ -56,7 +49,7 @@ export function ClosestRound({ onAnswer, phase }: RoundProps) {
 
   return (
     <div>
-      <Prompt>which swatch is closest to the target?</Prompt>
+      <Prompt>one of these is an exact match for the target. which?</Prompt>
 
       <div className="mx-auto mb-5 w-1/2">
         <div className="mb-1.5 text-center text-[10px] uppercase tracking-wider text-muted">
@@ -89,7 +82,7 @@ export function ClosestRound({ onAnswer, phase }: RoundProps) {
               </Swatch>
               {!playing && (
                 <div className="mt-1 text-center font-mono text-[11px] tabular-nums text-muted">
-                  ΔE {opt.dE.toFixed(1)}
+                  {opt.dE < 0.05 ? "exact" : `ΔE ${opt.dE.toFixed(1)}`}
                 </div>
               )}
             </div>
@@ -103,8 +96,8 @@ export function ClosestRound({ onAnswer, phase }: RoundProps) {
           points={picked === round.correct ? MAX_ROUND_SCORE : 0}
         >
           {picked === round.correct
-            ? "nailed it — smallest distance vector."
-            : "not quite. the ringed swatch had the smallest ΔE."}
+            ? "perfect eye — that was the exact twin."
+            : "so close. the ringed swatch was the exact match."}
         </ResultBanner>
       )}
     </div>

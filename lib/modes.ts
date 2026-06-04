@@ -1,6 +1,7 @@
 import {
   Hash,
   Crosshair,
+  Target,
   Eye,
   SlidersHorizontal,
   Pipette,
@@ -12,13 +13,14 @@ import {
 
 export type ModeId =
   | "guess-hex"
-  | "closest"
-  | "hex-to-color"
   | "rgb-match"
   | "spectrum"
+  | "closest"
+  | "exact"
+  | "hex-to-color"
+  | "names"
   | "flags"
-  | "brands"
-  | "names";
+  | "brands";
 
 export type ModeKind = "precision" | "choice";
 
@@ -31,7 +33,6 @@ export type Mode = {
   kind: ModeKind;
   /** 1 = approachable, 3 = brutal */
   difficulty: 1 | 2 | 3;
-  rounds: number;
 };
 
 export const MODES: Mode[] = [
@@ -44,7 +45,6 @@ export const MODES: Mode[] = [
     icon: Hash,
     kind: "precision",
     difficulty: 3,
-    rounds: 8,
   },
   {
     id: "rgb-match",
@@ -55,18 +55,16 @@ export const MODES: Mode[] = [
     icon: SlidersHorizontal,
     kind: "precision",
     difficulty: 2,
-    rounds: 8,
   },
   {
     id: "spectrum",
     title: "spectrum",
-    tagline: "click to find the colour",
+    tagline: "slide to find the colour",
     blurb:
-      "A full hue × lightness field. Click where you think the target lives. Closer click, higher score. Your eye against the rainbow.",
+      "A full hue × lightness field. Drag across it until your pick matches the target shown beside it. Your eye against the rainbow.",
     icon: Pipette,
     kind: "precision",
     difficulty: 3,
-    rounds: 8,
   },
   {
     id: "closest",
@@ -77,7 +75,16 @@ export const MODES: Mode[] = [
     icon: Crosshair,
     kind: "choice",
     difficulty: 2,
-    rounds: 10,
+  },
+  {
+    id: "exact",
+    title: "exact match",
+    tagline: "four are close — one is perfect",
+    blurb:
+      "Four almost-identical swatches sit beside the target. Exactly one is a pixel-perfect match (ΔE 0); the rest are a hair off. Spot the twin.",
+    icon: Target,
+    kind: "choice",
+    difficulty: 3,
   },
   {
     id: "hex-to-color",
@@ -88,7 +95,6 @@ export const MODES: Mode[] = [
     icon: Eye,
     kind: "choice",
     difficulty: 1,
-    rounds: 10,
   },
   {
     id: "names",
@@ -99,7 +105,6 @@ export const MODES: Mode[] = [
     icon: Type,
     kind: "choice",
     difficulty: 1,
-    rounds: 10,
   },
   {
     id: "flags",
@@ -110,7 +115,6 @@ export const MODES: Mode[] = [
     icon: Flag,
     kind: "choice",
     difficulty: 2,
-    rounds: 10,
   },
   {
     id: "brands",
@@ -121,7 +125,6 @@ export const MODES: Mode[] = [
     icon: Building2,
     kind: "choice",
     difficulty: 2,
-    rounds: 10,
   },
 ];
 
@@ -130,6 +133,12 @@ export const MODE_MAP: Record<ModeId, Mode> = Object.fromEntries(
 ) as Record<ModeId, Mode>;
 
 export const MODE_IDS = MODES.map((m) => m.id);
+
+/** Rounds per game — standard across solo play and the mixed "ultimate" game. */
+export const ROUNDS = 12;
+
+/** The mode the landing page (`/`) drops you straight into when playing solo. */
+export const DEFAULT_MODE: ModeId = "guess-hex";
 
 export function isModeId(x: string): x is ModeId {
   return x in MODE_MAP;

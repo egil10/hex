@@ -1,16 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { Check } from "lucide-react";
-import { GameFrame } from "./game-frame";
+import type { RoundProps } from "@/lib/round";
 import { ResultBanner, Prompt } from "./feedback";
 import { Swatch } from "@/components/ui/swatch";
-import { useGame } from "@/lib/use-game";
-import { MODE_MAP } from "@/lib/modes";
 import { deltaE, randomVividRgb, rgbToHex, shuffle, MAX_ROUND_SCORE, type RGB } from "@/lib/color";
 import { cn } from "@/lib/cn";
-
-const MODE = MODE_MAP["hex-to-color"];
 
 type Round = { hex: string; options: RGB[]; correct: number };
 
@@ -20,33 +16,28 @@ function makeRound(): Round {
   let guard = 0;
   while (options.length < 4 && guard++ < 400) {
     const c = randomVividRgb();
-    // distinct enough from every existing option to avoid ambiguity
-    const minGap = guard > 200 ? 20 : 38; // relax if we're struggling
+    const minGap = guard > 200 ? 20 : 38;
     if (options.every((o) => deltaE(o, c) > minGap)) options.push(c);
   }
-  while (options.length < 4) options.push(randomVividRgb()); // absolute fallback
+  while (options.length < 4) options.push(randomVividRgb());
   const shuffled = shuffle(options);
   return { hex: rgbToHex(target), options: shuffled, correct: shuffled.indexOf(target) };
 }
 
-export function HexToColor() {
-  const game = useGame(MODE.rounds);
-  const round = useMemo(makeRound, [game.seed]);
+export function HexToColorRound({ onAnswer, phase }: RoundProps) {
+  const [round] = useState(makeRound);
   const [picked, setPicked] = useState<number | null>(null);
-
-  useEffect(() => setPicked(null), [game.seed]);
-
-  const playing = game.phase === "playing";
+  const playing = phase === "playing";
 
   function choose(i: number) {
     if (!playing) return;
     setPicked(i);
     const correct = i === round.correct;
-    game.submit({ score: correct ? MAX_ROUND_SCORE : 0, hit: correct });
+    onAnswer({ score: correct ? MAX_ROUND_SCORE : 0, hit: correct });
   }
 
   return (
-    <GameFrame mode={MODE} game={game}>
+    <div>
       <Prompt>which swatch does this hex code make?</Prompt>
 
       <div className="mx-auto mb-5 w-fit rounded-xl border border-border bg-surface px-6 py-3">
@@ -94,6 +85,6 @@ export function HexToColor() {
             : `that was ${round.hex} — the ringed swatch.`}
         </ResultBanner>
       )}
-    </GameFrame>
+    </div>
   );
 }

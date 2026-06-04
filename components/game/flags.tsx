@@ -1,15 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { GameFrame } from "./game-frame";
+import { useState } from "react";
+import type { RoundProps } from "@/lib/round";
 import { ResultBanner, Prompt } from "./feedback";
 import { TextOption } from "./text-option";
-import { useGame } from "@/lib/use-game";
-import { MODE_MAP } from "@/lib/modes";
 import { shuffle, MAX_ROUND_SCORE } from "@/lib/color";
 import { FLAGS, type FlagEntry } from "@/data/flags";
-
-const MODE = MODE_MAP["flags"];
 
 type Round = { flag: FlagEntry; options: FlagEntry[]; correct: number };
 
@@ -20,33 +16,28 @@ function makeRound(): Round {
   return { flag, options, correct: options.findIndex((o) => o.iso === flag.iso) };
 }
 
-export function Flags() {
-  const game = useGame(MODE.rounds);
-  const round = useMemo(makeRound, [game.seed]);
+export function FlagsRound({ onAnswer, phase }: RoundProps) {
+  const [round] = useState(makeRound);
   const [picked, setPicked] = useState<number | null>(null);
-
-  useEffect(() => setPicked(null), [game.seed]);
-
-  const playing = game.phase === "playing";
+  const playing = phase === "playing";
 
   function choose(i: number) {
     if (!playing) return;
     setPicked(i);
     const correct = i === round.correct;
-    game.submit({ score: correct ? MAX_ROUND_SCORE : 0, hit: correct });
+    onAnswer({ score: correct ? MAX_ROUND_SCORE : 0, hit: correct });
   }
 
   return (
-    <GameFrame mode={MODE} game={game}>
+    <div>
       <Prompt>these are a national flag&apos;s colours. whose flag?</Prompt>
 
-      {/* the palette clue — flag colours as an abstract strip */}
       <div className="mx-auto flex h-28 w-full max-w-sm overflow-hidden rounded-xl border border-border">
         {round.flag.colors.map((c, i) => (
           <div key={i} className="flex-1" style={{ backgroundColor: c }} />
         ))}
       </div>
-      <div className="mt-2 flex justify-center gap-2 font-mono text-[11px] tabular-nums text-muted">
+      <div className="mt-2 flex flex-wrap justify-center gap-x-2 font-mono text-[11px] tabular-nums text-muted">
         {round.flag.colors.map((c) => (
           <span key={c}>{c}</span>
         ))}
@@ -92,6 +83,6 @@ export function Flags() {
           </span>
         </ResultBanner>
       )}
-    </GameFrame>
+    </div>
   );
 }

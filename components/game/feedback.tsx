@@ -2,7 +2,14 @@
 
 import { Check, X } from "lucide-react";
 import { Swatch } from "@/components/ui/swatch";
-import { tierFromDeltaE } from "@/lib/color";
+import { CoordinateCompare } from "./coordinate-compare";
+import {
+  deltaE,
+  rgbToHex,
+  scoreFromDeltaE,
+  tierFromDeltaE,
+  type RGB,
+} from "@/lib/color";
 import { cn } from "@/lib/cn";
 
 export function LabeledSwatch({
@@ -23,25 +30,21 @@ export function LabeledSwatch({
   );
 }
 
-/** Shared feedback for ΔE-scored modes (guess-hex, rgb-match, spectrum). */
-export function PrecisionFeedback({
-  targetHex,
-  guessHex,
-  dE,
-  score,
-}: {
-  targetHex: string;
-  guessHex: string;
-  dE: number;
-  score: number;
-}) {
+/**
+ * Feedback for ΔE-scored modes (guess-hex, rgb-match, spectrum): the two
+ * swatches, the ΔE verdict, and the coordinate plot of where each colour sat.
+ */
+export function PrecisionFeedback({ target, guess }: { target: RGB; guess: RGB }) {
+  const dE = deltaE(target, guess);
+  const score = scoreFromDeltaE(dE);
   const tier = tierFromDeltaE(dE);
   return (
     <div className="animate-pop">
       <div className="grid grid-cols-2 gap-3">
-        <LabeledSwatch label="your colour" hex={guessHex} />
-        <LabeledSwatch label="actual" hex={targetHex} />
+        <LabeledSwatch label="your colour" hex={rgbToHex(guess)} />
+        <LabeledSwatch label="actual" hex={rgbToHex(target)} />
       </div>
+
       <div className="mt-3 flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3">
         <div>
           <div className="text-[10px] uppercase tracking-wider text-muted">ΔE distance</div>
@@ -50,11 +53,11 @@ export function PrecisionFeedback({
         <div className={cn("text-sm font-medium", tier.tone)}>{tier.label}</div>
         <div className="text-right">
           <div className="text-[10px] uppercase tracking-wider text-muted">points</div>
-          <div className="font-mono text-xl font-semibold tabular-nums text-accent">
-            +{score}
-          </div>
+          <div className="font-mono text-xl font-semibold tabular-nums text-accent">+{score}</div>
         </div>
       </div>
+
+      <CoordinateCompare target={target} guess={guess} />
     </div>
   );
 }

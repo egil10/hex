@@ -1,45 +1,37 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
-export type RoundResult = {
-  /** points earned this round (0..1000) */
-  score: number;
-  /** whether this round counts as a "hit" for streak / accuracy */
-  hit: boolean;
-};
+import type { RoundResult } from "./round";
+import { MODE_IDS, type ModeId, isModeId } from "./modes";
 
 export type Phase = "playing" | "feedback" | "done";
-
 export type Game = ReturnType<typeof useGame>;
 
 /**
- * The shared game loop: tracks the current round, accumulated results, the
- * phase (answering / showing feedback / finished) and derived stats like the
- * running streak. Each mode owns *what* a round looks like; this owns the flow.
- *
- * Phase + index are mirrored into refs so the transition handlers can guard
- * against double-firing (e.g. a held Enter key, or a fast double-click)
- * regardless of React's batching.
+ * The shared game loop. Each mode owns *what* a round looks like; this owns the
+ * flow: current round, accumulated results, phase, and derived stats. Phase +
+ * index are mirrored into refs so the transition handlers can't double-fire
+ * (held Enter, fast clicks) regardless of React batching.
  */
 export function useGame(totalRounds: number) {
   const [index, setIndex] = useState(0);
   const [phase, setPhase] = useState<Phase>("playing");
-  const [seed, setSeed] = useState(0);
   const [results, setResults] = useState<RoundResult[]>([]);
+  // increments only on restart — used to regenerate the mode order
+  const [runId, setRunId] = useState(0);
 
   const indexRef = useRef(0);
   const phaseRef = useRef<Phase>("playing");
 
   const submit = useCallback((r: RoundResult) => {
-    if (phaseRef.current !== "playing") return; // already answered this round
+    if (phaseRef.current !== "playing") return; // already answered
     phaseRef.current = "feedback";
     setPhase("feedback");
     setResults((prev) => [...prev, r]);
   }, []);
 
   const next = useCallback(() => {
-    if (phaseRef.current !== "feedback") return; // nothing to advance from
+    if (phaseRef.current !== "feedback") return;
     if (indexRef.current + 1 >= totalRounds) {
       phaseRef.current = "done";
       setPhase("done");
@@ -47,7 +39,6 @@ export function useGame(totalRounds: number) {
       indexRef.current += 1;
       phaseRef.current = "playing";
       setIndex(indexRef.current);
-      setSeed((s) => s + 1);
       setPhase("playing");
     }
   }, [totalRounds]);
@@ -58,7 +49,7 @@ export function useGame(totalRounds: number) {
     setIndex(0);
     setPhase("playing");
     setResults([]);
-    setSeed((s) => s + 1);
+    setRunId((r) => r + 1);
   }, []);
 
   const totalScore = useMemo(
@@ -85,7 +76,7 @@ export function useGame(totalRounds: number) {
   return {
     index,
     total: totalRounds,
-    seed,
+    runId,
     results,
     phase,
     totalScore,
@@ -100,16 +91,16 @@ export function useGame(totalRounds: number) {
   };
 }
 
-const KEY = (mode: string) => `hexquiz:best:${mode}`;
+// ---------------------------------------------------------------- best scores
 
-/** Read the stored best score for a mode (client only). */
+const BEST_KEY = (mode: string) => `hexquiz:best:${mode}`;
+
 export function getBestScore(mode: string): number {
   if (typeof window === "undefined") return 0;
-  const v = window.localStorage.getItem(KEY(mode));
+  const v = window.localStorage.getItem(BEST_KEY(mode));
   return v ? parseInt(v, 10) || 0 : 0;
 }
 
-/** Persist a new score if it beats the stored best. Returns the best + whether it's new. */
 export function saveBestScore(
   mode: string,
   score: number,
@@ -117,17 +108,32 @@ export function saveBestScore(
   if (typeof window === "undefined") return { best: score, isNew: false };
   const prev = getBestScore(mode);
   if (score > prev) {
-    window.localStorage.setItem(KEY(mode), String(score));
+    window.localStorage.setItem(BEST_KEY(mode), String(score));
     return { best: score, isNew: true };
   }
   return { best: prev, isNew: false };
 }
 
-/** React hook: live best score for a mode, refreshed on mount. */
-export function useBestScore(mode: string): number {
-  const [best, setBest] = useState(0);
-  useEffect(() => {
-    setBest(getBestScore(mode));
-  }, [mode]);
-  return best;
+// ----------------------------------------------------------- mode selection
+
+const SELECTION_KEY = "hexquiz:modes";
+
+/** Load the player's enabled-mode selection (defaults to all modes). */
+export function loadSelection(): ModeId[] {
+  if (typeof window === "undefined") return [...MODE_IDS];
+  try {
+    const raw = window.localStorage.getItem(SELECTION_KEY);
+    if (!raw) return [...MODE_IDS];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [...MODE_IDS];
+    const valid = parsed.filter((x): x is ModeId => typeof x === "string" && isModeId(x));
+    return valid.length ? valid : [...MODE_IDS];
+  } catch {
+    return [...MODE_IDS];
+  }
+}
+
+export function saveSelection(modes: ModeId[]) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(SELECTION_KEY, JSON.stringify(modes));
 }

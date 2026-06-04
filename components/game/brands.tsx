@@ -1,16 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { GameFrame } from "./game-frame";
+import { useState } from "react";
+import type { RoundProps } from "@/lib/round";
 import { ResultBanner, Prompt } from "./feedback";
 import { TextOption } from "./text-option";
 import { Swatch } from "@/components/ui/swatch";
-import { useGame } from "@/lib/use-game";
-import { MODE_MAP } from "@/lib/modes";
 import { shuffle, MAX_ROUND_SCORE } from "@/lib/color";
 import { BRANDS, type BrandEntry } from "@/data/brands";
-
-const MODE = MODE_MAP["brands"];
 
 type Round = { brand: BrandEntry; options: BrandEntry[]; correct: number };
 
@@ -21,28 +17,23 @@ function makeRound(): Round {
   return { brand, options, correct: options.findIndex((o) => o.name === brand.name) };
 }
 
-export function Brands() {
-  const game = useGame(MODE.rounds);
-  const round = useMemo(makeRound, [game.seed]);
+export function BrandsRound({ onAnswer, phase }: RoundProps) {
+  const [round] = useState(makeRound);
   const [picked, setPicked] = useState<number | null>(null);
-
-  useEffect(() => setPicked(null), [game.seed]);
-
-  const playing = game.phase === "playing";
+  const playing = phase === "playing";
 
   function choose(i: number) {
     if (!playing) return;
     setPicked(i);
     const correct = i === round.correct;
-    game.submit({ score: correct ? MAX_ROUND_SCORE : 0, hit: correct });
+    onAnswer({ score: correct ? MAX_ROUND_SCORE : 0, hit: correct });
   }
 
   return (
-    <GameFrame mode={MODE} game={game}>
+    <div>
       <Prompt>a famous brand, reduced to its colours. which brand?</Prompt>
 
-      {/* palette clue */}
-      <div className="flex justify-center gap-3">
+      <div className="flex flex-wrap justify-center gap-3">
         {round.brand.colors.map((c, i) => (
           <Swatch key={i} hex={c} className="h-20 w-20 sm:h-24 sm:w-24" />
         ))}
@@ -75,14 +66,10 @@ export function Brands() {
           correct={picked === round.correct}
           points={picked === round.correct ? MAX_ROUND_SCORE : 0}
         >
-          those are{" "}
-          <span className="font-medium">{round.brand.name}</span>&apos;s colours{" "}
-          <span className="font-mono text-xs text-muted">
-            {round.brand.colors.join(" ")}
-          </span>
-          .
+          those are <span className="font-medium">{round.brand.name}</span>&apos;s colours{" "}
+          <span className="font-mono text-xs text-muted">{round.brand.colors.join(" ")}</span>.
         </ResultBanner>
       )}
-    </GameFrame>
+    </div>
   );
 }
