@@ -6,6 +6,10 @@ import { RgbMatchRound } from "./rgb-match";
 import { SpectrumRound } from "./spectrum";
 import { ClosestRound } from "./closest";
 import { ExactRound } from "./exact";
+import { ComplementRound } from "./complement";
+import { OddOneOutRound } from "./odd-one-out";
+import { MixRound } from "./mix";
+import { TemperatureRound } from "./temperature";
 import { HexToColorRound } from "./hex-to-color";
 import { NamesRound } from "./names";
 import { FlagsRound } from "./flags";
@@ -18,6 +22,10 @@ export const ROUND_COMPONENTS: Record<ModeId, ComponentType<RoundProps>> = {
   spectrum: SpectrumRound,
   closest: ClosestRound,
   exact: ExactRound,
+  complement: ComplementRound,
+  "odd-one-out": OddOneOutRound,
+  mix: MixRound,
+  temperature: TemperatureRound,
   "hex-to-color": HexToColorRound,
   names: NamesRound,
   flags: FlagsRound,

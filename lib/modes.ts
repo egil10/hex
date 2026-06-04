@@ -8,6 +8,10 @@ import {
   Flag,
   Building2,
   Type,
+  Contrast,
+  Shapes,
+  Blend,
+  Thermometer,
   type LucideIcon,
 } from "lucide-react";
 
@@ -17,6 +21,10 @@ export type ModeId =
   | "spectrum"
   | "closest"
   | "exact"
+  | "complement"
+  | "odd-one-out"
+  | "mix"
+  | "temperature"
   | "hex-to-color"
   | "names"
   | "flags"
@@ -85,6 +93,46 @@ export const MODES: Mode[] = [
     icon: Target,
     kind: "choice",
     difficulty: 3,
+  },
+  {
+    id: "complement",
+    title: "complement",
+    tagline: "find the opposite colour",
+    blurb:
+      "Pick the colour directly opposite the target on the wheel — same swatch, hue spun 180°. A little colour theory, scored right or wrong.",
+    icon: Contrast,
+    kind: "choice",
+    difficulty: 2,
+  },
+  {
+    id: "odd-one-out",
+    title: "odd one out",
+    tagline: "spot the colour that doesn't belong",
+    blurb:
+      "Four swatches: three are near-siblings, one drifts away. Pick the outlier — the colour furthest from the rest in Lab space.",
+    icon: Shapes,
+    kind: "choice",
+    difficulty: 2,
+  },
+  {
+    id: "mix",
+    title: "colour mix",
+    tagline: "blend two colours in your head",
+    blurb:
+      "Two swatches go in. Which of the four is what you get when you blend them? Pure midpoint maths, eyeballed.",
+    icon: Blend,
+    kind: "choice",
+    difficulty: 2,
+  },
+  {
+    id: "temperature",
+    title: "warmest",
+    tagline: "which colour runs hottest?",
+    blurb:
+      "Four colours, one feels warmest. Trust your gut on reds over blues — then see how the numbers agree.",
+    icon: Thermometer,
+    kind: "choice",
+    difficulty: 1,
   },
   {
     id: "hex-to-color",
