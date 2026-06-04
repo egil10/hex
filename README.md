@@ -17,9 +17,14 @@ line is the ΔE), a lightness bar, and per-channel RGB tracks.
 
 The landing page drops you straight into **the ultimate colour game** — every mode
 shuffled together. Use the menu up top to pick a subset of modes (or just one); the
-choice is saved to your browser. The explainer and a per-mode overview live at
-[`/about`](https://hex-sable.vercel.app/about). Best scores save per-mode (and for
-the ultimate mix) to `localStorage`.
+choice is saved to your browser. Any round can be skipped, the score animates as it
+climbs, and there's an optional sound toggle (off by default). The explainer and a
+per-mode overview live at [`/about`](https://hex-sable.vercel.app/about). Best scores
+save per-mode (and for the ultimate mix) to `localStorage`.
+
+**[Daily challenge](https://hex-sable.vercel.app/daily)** — `/daily` serves the same
+twelve-round mix to everyone on a given UTC day, via a seeded RNG. Come back tomorrow
+for a new one; share your score.
 
 ## Game modes (13)
 
