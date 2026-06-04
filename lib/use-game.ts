@@ -43,6 +43,21 @@ export function useGame(totalRounds: number) {
     }
   }, [totalRounds]);
 
+  // give up on the current round: record a miss and move straight on
+  const skip = useCallback(() => {
+    if (phaseRef.current !== "playing") return;
+    setResults((prev) => [...prev, { score: 0, hit: false }]);
+    if (indexRef.current + 1 >= totalRounds) {
+      phaseRef.current = "done";
+      setPhase("done");
+    } else {
+      indexRef.current += 1;
+      phaseRef.current = "playing";
+      setIndex(indexRef.current);
+      setPhase("playing");
+    }
+  }, [totalRounds]);
+
   const restart = useCallback(() => {
     indexRef.current = 0;
     phaseRef.current = "playing";
@@ -85,6 +100,7 @@ export function useGame(totalRounds: number) {
     hits,
     submit,
     next,
+    skip,
     restart,
     roundNumber: index + 1,
     isLastRound: index + 1 >= totalRounds,

@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Info, Flame, ChevronRight } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SoundToggle } from "@/components/sound-toggle";
 import { ModeFilter } from "./mode-filter";
 import { Results } from "./results";
 import { ROUND_COMPONENTS } from "./registry";
 import { useGame } from "@/lib/use-game";
+import { useCountUp } from "@/lib/use-count-up";
+import { useSound } from "@/lib/use-sound";
 import { buildSequence } from "@/lib/round";
 import { MODE_IDS, MODE_MAP, ROUNDS, type ModeId } from "@/lib/modes";
 import { cn } from "@/lib/cn";
@@ -38,6 +41,21 @@ export function GameEngine({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [phase, next]);
+
+  // animated score + opt-in sound on each new result
+  const sound = useSound();
+  const shownScore = useCountUp(game.totalScore);
+  const playRef = useRef(sound.play);
+  playRef.current = sound.play;
+  const prevLen = useRef(0);
+  useEffect(() => {
+    const len = game.results.length;
+    if (len > prevLen.current && len > 0) {
+      const last = game.results[len - 1];
+      playRef.current(last.score >= 900 ? "great" : last.hit ? "good" : "miss");
+    }
+    prevLen.current = len;
+  }, [game.results.length]);
 
   const all = selection.length === MODE_IDS.length;
   const title = all
@@ -77,6 +95,7 @@ export function GameEngine({
           >
             <Info className="h-3.5 w-3.5" /> about
           </Link>
+          <SoundToggle on={sound.on} onToggle={sound.toggle} />
           <ThemeToggle />
         </div>
       </div>
@@ -108,7 +127,7 @@ export function GameEngine({
               <div className="text-right">
                 <div className="text-[10px] uppercase tracking-wider text-muted">score</div>
                 <div className="font-mono text-2xl font-semibold tabular-nums leading-none text-accent">
-                  {game.totalScore.toLocaleString()}
+                  {shownScore.toLocaleString()}
                 </div>
               </div>
             </div>
@@ -149,6 +168,18 @@ export function GameEngine({
               footer={nextButton}
             />
           </div>
+
+          {phase === "playing" && (
+            <div className="mt-5 text-center">
+              <button
+                type="button"
+                onClick={game.skip}
+                className="text-xs text-muted underline-offset-4 transition-colors hover:text-fg hover:underline"
+              >
+                skip this one →
+              </button>
+            </div>
+          )}
         </>
       )}
     </main>
