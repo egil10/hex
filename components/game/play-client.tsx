@@ -11,21 +11,25 @@ import { MODE_IDS, type ModeId } from "@/lib/modes";
  * The game itself is client-only (it generates random colours), so we gate it
  * behind a mounted flag to avoid hydration mismatches.
  */
-export function PlayClient({ initial }: { initial?: ModeId[] }) {
+export function PlayClient({ initial, daily = false }: { initial?: ModeId[]; daily?: boolean }) {
   const [selection, setSelection] = useState<ModeId[]>(initial ?? MODE_IDS);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (!initial) setSelection(loadSelection());
+    if (!daily && !initial) setSelection(loadSelection());
     setMounted(true);
-  }, [initial]);
+  }, [initial, daily]);
 
   function change(next: ModeId[]) {
     setSelection(next);
-    if (!initial) saveSelection(next);
+    if (!daily && !initial) saveSelection(next);
   }
 
   if (!mounted) return <Skeleton />;
+
+  if (daily) {
+    return <GameEngine key="daily" selection={MODE_IDS} onChangeSelection={change} daily />;
+  }
 
   return (
     <GameEngine

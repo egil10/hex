@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check } from "lucide-react";
+import { rng } from "@/lib/rng";
 import type { RoundProps } from "@/lib/round";
 import { RoundLayout } from "./round-layout";
 import { ResultBanner, Prompt } from "./feedback";
@@ -22,13 +23,13 @@ type Round = { options: RGB[]; correct: number };
 function makeRound(): Round {
   const base = randomVividRgb();
   const cluster = [
-    nudge(base, 6 + Math.random() * 8),
-    nudge(base, 6 + Math.random() * 8),
-    nudge(base, 6 + Math.random() * 8),
+    nudge(base, 6 + rng() * 8),
+    nudge(base, 6 + rng() * 8),
+    nudge(base, 6 + rng() * 8),
   ];
-  let outlier = nudge(base, 50 + Math.random() * 28);
+  let outlier = nudge(base, 50 + rng() * 28);
   for (let i = 0; i < 50 && cluster.some((c) => deltaE(c, outlier) < 32); i++) {
-    outlier = nudge(base, 50 + Math.random() * 28);
+    outlier = nudge(base, 50 + rng() * 28);
   }
   const options = shuffle([...cluster, outlier]);
   return { options, correct: options.indexOf(outlier) };

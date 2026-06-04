@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Palette, ChevronRight, Sigma, Sparkles, Play } from "lucide-react";
+import { Palette, ChevronRight, Sigma, Sparkles, Play, CalendarDays } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { MODES } from "@/lib/modes";
 import { getBestScore } from "@/lib/use-game";
@@ -58,6 +58,12 @@ export function About() {
               className="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
             >
               <Sparkles className="h-4 w-4" /> play the ultimate game
+            </Link>
+            <Link
+              href="/daily"
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-medium transition-colors hover:border-accent/40"
+            >
+              <CalendarDays className="h-4 w-4 text-accent" /> daily challenge
             </Link>
             {best.ultimate > 0 && (
               <span className="font-mono text-xs tabular-nums text-muted">

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check } from "lucide-react";
+import { rng } from "@/lib/rng";
 import type { RoundProps } from "@/lib/round";
 import { RoundLayout } from "./round-layout";
 import { ResultBanner, Prompt } from "./feedback";
@@ -24,10 +25,10 @@ function makeRound(): Round {
   const target = randomVividRgb();
   for (let attempt = 0; attempt < 60; attempt++) {
     const mags = [
-      8 + Math.random() * 7,
-      34 + Math.random() * 16,
-      54 + Math.random() * 16,
-      76 + Math.random() * 20,
+      8 + rng() * 7,
+      34 + rng() * 16,
+      54 + rng() * 16,
+      76 + rng() * 20,
     ];
     const cands = mags.map((m) => nudge(target, m));
     const des = cands.map((c) => deltaE(target, c));

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check } from "lucide-react";
+import { rng } from "@/lib/rng";
 import type { RoundProps } from "@/lib/round";
 import { RoundLayout } from "./round-layout";
 import { ResultBanner, Prompt } from "./feedback";
@@ -43,7 +44,7 @@ function makeRound(diff: Difficulty): Round {
   const near: RGB[] = [];
   let guard = 0;
   while (near.length < 3 && guard++ < 200) {
-    const c = nudge(target, lo + Math.random() * (hi - lo));
+    const c = nudge(target, lo + rng() * (hi - lo));
     if (deltaE(target, c) > 0.8 && near.every((n) => deltaE(n, c) > 0.5)) near.push(c);
   }
   while (near.length < 3) near.push(nudge(target, hi));
@@ -55,9 +56,9 @@ function makeRound(diff: Difficulty): Round {
   };
 }
 
-export function ExactRound({ onAnswer, phase, footer }: RoundProps) {
-  const [diff, setDiff] = useState<Difficulty>(loadDiff);
-  const [round, setRound] = useState<Round>(() => makeRound(loadDiff()));
+export function ExactRound({ onAnswer, phase, footer, daily }: RoundProps) {
+  const [diff, setDiff] = useState<Difficulty>(() => (daily ? "normal" : loadDiff()));
+  const [round, setRound] = useState<Round>(() => makeRound(daily ? "normal" : loadDiff()));
   const [picked, setPicked] = useState<number | null>(null);
   const playing = phase === "playing";
 
@@ -80,25 +81,27 @@ export function ExactRound({ onAnswer, phase, footer }: RoundProps) {
     <>
       <Prompt>one of these is an exact match for the target. which?</Prompt>
 
-      <div className="mb-4 flex items-center justify-center gap-2">
-        <span className="text-[10px] uppercase tracking-wider text-muted">difficulty</span>
-        <div className="inline-flex rounded-full border border-border bg-surface p-0.5">
-          {(["easy", "normal", "hard"] as Difficulty[]).map((d) => (
-            <button
-              key={d}
-              type="button"
-              onClick={() => chooseDiff(d)}
-              disabled={!playing}
-              className={cn(
-                "rounded-full px-3 py-1 text-xs transition-colors disabled:cursor-not-allowed",
-                diff === d ? "bg-accent/10 font-medium text-accent" : "text-muted hover:text-fg",
-              )}
-            >
-              {d}
-            </button>
-          ))}
+      {!daily && (
+        <div className="mb-4 flex items-center justify-center gap-2">
+          <span className="text-[10px] uppercase tracking-wider text-muted">difficulty</span>
+          <div className="inline-flex rounded-full border border-border bg-surface p-0.5">
+            {(["easy", "normal", "hard"] as Difficulty[]).map((d) => (
+              <button
+                key={d}
+                type="button"
+                onClick={() => chooseDiff(d)}
+                disabled={!playing}
+                className={cn(
+                  "rounded-full px-3 py-1 text-xs transition-colors disabled:cursor-not-allowed",
+                  diff === d ? "bg-accent/10 font-medium text-accent" : "text-muted hover:text-fg",
+                )}
+              >
+                {d}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="mx-auto mb-5 w-1/2">
         <div className="mb-1.5 text-center text-[10px] uppercase tracking-wider text-muted">

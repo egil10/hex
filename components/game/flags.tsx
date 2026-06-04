@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { rng } from "@/lib/rng";
 import type { RoundProps } from "@/lib/round";
 import { RoundLayout } from "./round-layout";
 import { ResultBanner, Prompt } from "./feedback";
@@ -11,7 +12,7 @@ import { FLAGS, type FlagEntry } from "@/data/flags";
 type Round = { flag: FlagEntry; options: FlagEntry[]; correct: number };
 
 function makeRound(): Round {
-  const flag = FLAGS[Math.floor(Math.random() * FLAGS.length)];
+  const flag = FLAGS[Math.floor(rng() * FLAGS.length)];
   const distractors = shuffle(FLAGS.filter((f) => f.iso !== flag.iso)).slice(0, 3);
   const options = shuffle([flag, ...distractors]);
   return { flag, options, correct: options.findIndex((o) => o.iso === flag.iso) };

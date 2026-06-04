@@ -19,6 +19,8 @@ export type RoundProps = {
   phase: RoundPhase;
   /** the engine's "next round" control, rendered by the mode inside its layout */
   footer?: ReactNode;
+  /** true during the daily challenge — modes should avoid per-user variation */
+  daily?: boolean;
 };
 
 /**

@@ -7,6 +7,8 @@
 // Euclidean distance (ΔE) lines up with how different two colours *look* to a
 // human far better than raw RGB distance does.
 
+import { rng } from "./rng";
+
 export type RGB = { r: number; g: number; b: number };
 export type LAB = { L: number; a: number; b: number };
 export type HSL = { h: number; s: number; l: number };
@@ -182,9 +184,9 @@ export const HIT_DELTA_E = 20;
 
 export function randomRgb(): RGB {
   return {
-    r: Math.floor(Math.random() * 256),
-    g: Math.floor(Math.random() * 256),
-    b: Math.floor(Math.random() * 256),
+    r: Math.floor(rng() * 256),
+    g: Math.floor(rng() * 256),
+    b: Math.floor(rng() * 256),
   };
 }
 
@@ -195,18 +197,18 @@ export function randomHex(): string {
 /** A pleasant, reasonably saturated random colour (avoids muddy near-greys). */
 export function randomVividRgb(): RGB {
   return hslToRgb({
-    h: Math.random() * 360,
-    s: 0.45 + Math.random() * 0.5,
-    l: 0.3 + Math.random() * 0.45,
+    h: rng() * 360,
+    s: 0.45 + rng() * 0.5,
+    l: 0.3 + rng() * 0.45,
   });
 }
 
 /** Nudge a colour by a target RGB magnitude in a random direction, clamped. */
 export function nudge(rgb: RGB, magnitude: number): RGB {
   // random unit-ish direction
-  let dr = Math.random() * 2 - 1;
-  let dg = Math.random() * 2 - 1;
-  let db = Math.random() * 2 - 1;
+  let dr = rng() * 2 - 1;
+  let dg = rng() * 2 - 1;
+  let db = rng() * 2 - 1;
   const len = Math.sqrt(dr * dr + dg * dg + db * db) || 1;
   dr = (dr / len) * magnitude;
   dg = (dg / len) * magnitude;
@@ -230,7 +232,7 @@ export function readableText(rgb: RGB): string {
 export function shuffle<T>(arr: readonly T[]): T[] {
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(rng() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;

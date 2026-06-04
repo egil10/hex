@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { rng } from "@/lib/rng";
 import type { RoundProps } from "@/lib/round";
 import { RoundLayout } from "./round-layout";
 import { Prompt, PrecisionVisual } from "./feedback";
@@ -19,8 +20,8 @@ import {
 type Pick = { x: number; y: number; rgb: RGB };
 
 function makeTarget() {
-  const h = Math.random() * 360;
-  const l = 0.18 + Math.random() * 0.64;
+  const h = rng() * 360;
+  const l = 0.18 + rng() * 0.64;
   return { h, l, rgb: hslToRgb({ h, s: 1, l }), x: h / 360, y: 1 - l };
 }
 

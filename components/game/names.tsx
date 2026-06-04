@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { rng } from "@/lib/rng";
 import type { RoundProps } from "@/lib/round";
 import { RoundLayout } from "./round-layout";
 import { ResultBanner, Prompt } from "./feedback";
@@ -12,7 +13,7 @@ import { NAMED_COLORS, type NamedColor } from "@/data/colors";
 type Round = { swatch: NamedColor; options: NamedColor[]; correct: number };
 
 function makeRound(): Round {
-  const swatch = NAMED_COLORS[Math.floor(Math.random() * NAMED_COLORS.length)];
+  const swatch = NAMED_COLORS[Math.floor(rng() * NAMED_COLORS.length)];
   const targetRgb = hexToRgb(swatch.hex)!;
   const pool = shuffle(NAMED_COLORS).filter((c) => c.name !== swatch.name);
   const distractors: NamedColor[] = [];

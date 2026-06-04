@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef } from "react";
-import { Info, Flame, ChevronRight } from "lucide-react";
+import { Info, Flame, ChevronRight, CalendarDays, Shuffle } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SoundToggle } from "@/components/sound-toggle";
 import { ModeFilter } from "./mode-filter";
@@ -11,6 +11,7 @@ import { ROUND_COMPONENTS } from "./registry";
 import { useGame } from "@/lib/use-game";
 import { useCountUp } from "@/lib/use-count-up";
 import { useSound } from "@/lib/use-sound";
+import { seedRng, resetRng, dailySeed, todayKey } from "@/lib/rng";
 import { buildSequence } from "@/lib/round";
 import { MODE_IDS, MODE_MAP, ROUNDS, type ModeId } from "@/lib/modes";
 import { cn } from "@/lib/cn";
@@ -18,15 +19,30 @@ import { cn } from "@/lib/cn";
 export function GameEngine({
   selection,
   onChangeSelection,
+  daily = false,
 }: {
   selection: ModeId[];
   onChangeSelection: (m: ModeId[]) => void;
+  daily?: boolean;
 }) {
   const game = useGame(ROUNDS);
-  const sequence = useMemo(
-    () => buildSequence(selection, ROUNDS),
-    [selection, game.runId],
-  );
+  const daySeed = useMemo(() => dailySeed(), []);
+  const dayKey = useMemo(() => todayKey(), []);
+
+  const sequence = useMemo(() => {
+    if (daily) {
+      seedRng(daySeed);
+      const s = buildSequence(MODE_IDS, ROUNDS);
+      resetRng();
+      return s;
+    }
+    return buildSequence(selection, ROUNDS);
+  }, [daily, daySeed, selection, game.runId]);
+
+  // Seed the global RNG right before the round mounts so the daily is the same
+  // for everyone; reset to Math.random for normal (random) play.
+  if (daily) seedRng(daySeed * 100 + game.index);
+  else resetRng();
 
   // Enter advances during feedback (single advance path — no double-fire).
   const { phase, next } = game;
@@ -58,12 +74,20 @@ export function GameEngine({
   }, [game.results.length]);
 
   const all = selection.length === MODE_IDS.length;
-  const title = all
-    ? "ultimate colour game"
-    : selection.length === 1
-      ? MODE_MAP[selection[0]].title
-      : `${selection.length}-mode mix`;
-  const scoreKey = all ? "ultimate" : selection.length === 1 ? selection[0] : "custom";
+  const title = daily
+    ? `daily · ${dayKey}`
+    : all
+      ? "ultimate colour game"
+      : selection.length === 1
+        ? MODE_MAP[selection[0]].title
+        : `${selection.length}-mode mix`;
+  const scoreKey = daily
+    ? `daily:${dayKey}`
+    : all
+      ? "ultimate"
+      : selection.length === 1
+        ? selection[0]
+        : "custom";
 
   const currentModeId = sequence[game.index] ?? selection[0] ?? MODE_IDS[0];
   const mode = MODE_MAP[currentModeId];
@@ -86,9 +110,30 @@ export function GameEngine({
 
   return (
     <main className="mx-auto min-h-dvh max-w-4xl px-5 pb-16 pt-6">
-      <div className="flex items-center justify-between gap-3">
-        <ModeFilter selection={selection} onChange={onChangeSelection} />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        {daily ? (
+          <span className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/5 py-1.5 pl-3 pr-3.5 text-sm font-medium">
+            <CalendarDays className="h-4 w-4 text-accent" /> daily · {dayKey}
+          </span>
+        ) : (
+          <ModeFilter selection={selection} onChange={onChangeSelection} />
+        )}
         <div className="flex items-center gap-2">
+          {daily ? (
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-muted transition-colors hover:text-fg"
+            >
+              <Shuffle className="h-3.5 w-3.5" /> free play
+            </Link>
+          ) : (
+            <Link
+              href="/daily"
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-muted transition-colors hover:text-fg"
+            >
+              <CalendarDays className="h-3.5 w-3.5" /> daily
+            </Link>
+          )}
           <Link
             href="/about"
             className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-muted transition-colors hover:text-fg"
@@ -166,6 +211,7 @@ export function GameEngine({
               onAnswer={game.submit}
               phase={phase === "feedback" ? "feedback" : "playing"}
               footer={nextButton}
+              daily={daily}
             />
           </div>
 
