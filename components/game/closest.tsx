@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check } from "lucide-react";
 import type { RoundProps } from "@/lib/round";
+import { RoundLayout } from "./round-layout";
 import { ResultBanner, Prompt } from "./feedback";
 import { Swatch } from "@/components/ui/swatch";
 import {
@@ -42,7 +43,7 @@ function makeRound(): Round {
   return { target, options: cands.map((rgb, i) => ({ rgb, dE: des[i] })), correct: 0 };
 }
 
-export function ClosestRound({ onAnswer, phase }: RoundProps) {
+export function ClosestRound({ onAnswer, phase, footer }: RoundProps) {
   const [round] = useState(makeRound);
   const [picked, setPicked] = useState<number | null>(null);
   const playing = phase === "playing";
@@ -54,17 +55,15 @@ export function ClosestRound({ onAnswer, phase }: RoundProps) {
     onAnswer({ score: correct ? MAX_ROUND_SCORE : 0, hit: correct });
   }
 
-  return (
-    <div>
+  const stage = (
+    <>
       <Prompt>which swatch is closest to the target?</Prompt>
-
       <div className="mx-auto mb-5 w-1/2">
         <div className="mb-1.5 text-center text-[10px] uppercase tracking-wider text-muted">
           target
         </div>
         <Swatch hex={rgbToHex(round.target)} className="h-24 w-full" />
       </div>
-
       <div className="grid grid-cols-2 gap-3">
         {round.options.map((opt, i) => {
           const isCorrect = i === round.correct;
@@ -96,17 +95,20 @@ export function ClosestRound({ onAnswer, phase }: RoundProps) {
           );
         })}
       </div>
-
-      {!playing && (
-        <ResultBanner
-          correct={picked === round.correct}
-          points={picked === round.correct ? MAX_ROUND_SCORE : 0}
-        >
-          {picked === round.correct
-            ? "nailed it — smallest distance vector."
-            : "not quite. the ringed swatch had the smallest ΔE."}
-        </ResultBanner>
-      )}
-    </div>
+    </>
   );
+
+  const feedback =
+    !playing && picked !== null ? (
+      <ResultBanner
+        correct={picked === round.correct}
+        points={picked === round.correct ? MAX_ROUND_SCORE : 0}
+      >
+        {picked === round.correct
+          ? "nailed it — smallest distance vector."
+          : "not quite. the ringed swatch had the smallest ΔE."}
+      </ResultBanner>
+    ) : undefined;
+
+  return <RoundLayout stage={stage} feedback={feedback} footer={footer} />;
 }

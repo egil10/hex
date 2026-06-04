@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { ModeId } from "./modes";
 import { shuffle } from "./color";
 
@@ -16,6 +17,8 @@ export type RoundPhase = "playing" | "feedback";
 export type RoundProps = {
   onAnswer: (r: RoundResult) => void;
   phase: RoundPhase;
+  /** the engine's "next round" control, rendered by the mode inside its layout */
+  footer?: ReactNode;
 };
 
 /**

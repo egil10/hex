@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check } from "lucide-react";
 import type { RoundProps } from "@/lib/round";
+import { RoundLayout } from "./round-layout";
 import { ResultBanner, Prompt } from "./feedback";
 import { Swatch } from "@/components/ui/swatch";
 import { deltaE, randomVividRgb, rgbToHex, shuffle, MAX_ROUND_SCORE, type RGB } from "@/lib/color";
@@ -24,7 +25,7 @@ function makeRound(): Round {
   return { hex: rgbToHex(target), options: shuffled, correct: shuffled.indexOf(target) };
 }
 
-export function HexToColorRound({ onAnswer, phase }: RoundProps) {
+export function HexToColorRound({ onAnswer, phase, footer }: RoundProps) {
   const [round] = useState(makeRound);
   const [picked, setPicked] = useState<number | null>(null);
   const playing = phase === "playing";
@@ -36,14 +37,12 @@ export function HexToColorRound({ onAnswer, phase }: RoundProps) {
     onAnswer({ score: correct ? MAX_ROUND_SCORE : 0, hit: correct });
   }
 
-  return (
-    <div>
+  const stage = (
+    <>
       <Prompt>which swatch does this hex code make?</Prompt>
-
       <div className="mx-auto mb-5 w-fit rounded-xl border border-border bg-surface px-6 py-3">
         <span className="font-mono text-2xl font-semibold tracking-wider">{round.hex}</span>
       </div>
-
       <div className="grid grid-cols-2 gap-3">
         {round.options.map((rgb, i) => {
           const isCorrect = i === round.correct;
@@ -74,17 +73,20 @@ export function HexToColorRound({ onAnswer, phase }: RoundProps) {
           );
         })}
       </div>
-
-      {!playing && (
-        <ResultBanner
-          correct={picked === round.correct}
-          points={picked === round.correct ? MAX_ROUND_SCORE : 0}
-        >
-          {picked === round.correct
-            ? `right — ${round.hex} it is.`
-            : `that was ${round.hex} — the ringed swatch.`}
-        </ResultBanner>
-      )}
-    </div>
+    </>
   );
+
+  const feedback =
+    !playing && picked !== null ? (
+      <ResultBanner
+        correct={picked === round.correct}
+        points={picked === round.correct ? MAX_ROUND_SCORE : 0}
+      >
+        {picked === round.correct
+          ? `right — ${round.hex} it is.`
+          : `that was ${round.hex} — the ringed swatch.`}
+      </ResultBanner>
+    ) : undefined;
+
+  return <RoundLayout stage={stage} feedback={feedback} footer={footer} />;
 }

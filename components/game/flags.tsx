@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { RoundProps } from "@/lib/round";
+import { RoundLayout } from "./round-layout";
 import { ResultBanner, Prompt } from "./feedback";
 import { TextOption } from "./text-option";
 import { shuffle, MAX_ROUND_SCORE } from "@/lib/color";
@@ -16,7 +17,7 @@ function makeRound(): Round {
   return { flag, options, correct: options.findIndex((o) => o.iso === flag.iso) };
 }
 
-export function FlagsRound({ onAnswer, phase }: RoundProps) {
+export function FlagsRound({ onAnswer, phase, footer }: RoundProps) {
   const [round] = useState(makeRound);
   const [picked, setPicked] = useState<number | null>(null);
   const playing = phase === "playing";
@@ -28,11 +29,10 @@ export function FlagsRound({ onAnswer, phase }: RoundProps) {
     onAnswer({ score: correct ? MAX_ROUND_SCORE : 0, hit: correct });
   }
 
-  return (
-    <div>
+  const stage = (
+    <>
       <Prompt>these are a national flag&apos;s colours. whose flag?</Prompt>
-
-      <div className="mx-auto flex h-28 w-full max-w-sm overflow-hidden rounded-xl border border-border">
+      <div className="mx-auto flex h-24 w-full max-w-sm overflow-hidden rounded-xl border border-border">
         {round.flag.colors.map((c, i) => (
           <div key={i} className="flex-1" style={{ backgroundColor: c }} />
         ))}
@@ -42,7 +42,6 @@ export function FlagsRound({ onAnswer, phase }: RoundProps) {
           <span key={c}>{c}</span>
         ))}
       </div>
-
       <div className="mt-5 grid grid-cols-2 gap-3">
         {round.options.map((opt, i) => (
           <TextOption
@@ -61,28 +60,31 @@ export function FlagsRound({ onAnswer, phase }: RoundProps) {
           />
         ))}
       </div>
-
-      {!playing && (
-        <ResultBanner
-          correct={picked === round.correct}
-          points={picked === round.correct ? MAX_ROUND_SCORE : 0}
-        >
-          <span className="flex items-center gap-2">
-            <img
-              src={`https://flagcdn.com/w80/${round.flag.iso}.png`}
-              srcSet={`https://flagcdn.com/w160/${round.flag.iso}.png 2x`}
-              alt={`Flag of ${round.flag.country}`}
-              width={32}
-              height={21}
-              loading="lazy"
-              className="rounded-sm border border-border"
-            />
-            <span>
-              that&apos;s <span className="font-medium">{round.flag.country}</span>.
-            </span>
-          </span>
-        </ResultBanner>
-      )}
-    </div>
+    </>
   );
+
+  const feedback =
+    !playing && picked !== null ? (
+      <ResultBanner
+        correct={picked === round.correct}
+        points={picked === round.correct ? MAX_ROUND_SCORE : 0}
+      >
+        <span className="flex items-center gap-2">
+          <img
+            src={`https://flagcdn.com/w80/${round.flag.iso}.png`}
+            srcSet={`https://flagcdn.com/w160/${round.flag.iso}.png 2x`}
+            alt={`Flag of ${round.flag.country}`}
+            width={32}
+            height={21}
+            loading="lazy"
+            className="rounded-sm border border-border"
+          />
+          <span>
+            that&apos;s <span className="font-medium">{round.flag.country}</span>.
+          </span>
+        </span>
+      </ResultBanner>
+    ) : undefined;
+
+  return <RoundLayout stage={stage} feedback={feedback} footer={footer} />;
 }

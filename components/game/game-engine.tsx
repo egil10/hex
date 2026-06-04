@@ -53,8 +53,21 @@ export function GameEngine({
   const ModeIcon = mode.icon;
   const showModeChip = selection.length > 1;
 
+  const nextButton =
+    phase === "feedback" ? (
+      <button
+        type="button"
+        onClick={game.next}
+        className="animate-pop flex w-full items-center justify-center gap-2 rounded-full bg-accent py-3.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+      >
+        {game.isLastRound ? "see results" : "next round"}
+        <ChevronRight className="h-4 w-4" />
+        <span className="ml-1 hidden text-xs text-white/70 sm:inline">↵ enter</span>
+      </button>
+    ) : null;
+
   return (
-    <main className="mx-auto min-h-dvh max-w-2xl px-5 pb-24 pt-6">
+    <main className="mx-auto min-h-dvh max-w-4xl px-5 pb-16 pt-6">
       <div className="flex items-center justify-between gap-3">
         <ModeFilter selection={selection} onChange={onChangeSelection} />
         <div className="flex items-center gap-2">
@@ -69,7 +82,9 @@ export function GameEngine({
       </div>
 
       {phase === "done" ? (
-        <Results game={game} scoreKey={scoreKey} title={title} />
+        <div className="mx-auto max-w-lg">
+          <Results game={game} scoreKey={scoreKey} title={title} />
+        </div>
       ) : (
         <>
           <div className="mt-6 flex items-end justify-between">
@@ -131,20 +146,9 @@ export function GameEngine({
               key={game.index}
               onAnswer={game.submit}
               phase={phase === "feedback" ? "feedback" : "playing"}
+              footer={nextButton}
             />
           </div>
-
-          {phase === "feedback" && (
-            <button
-              type="button"
-              onClick={game.next}
-              className="animate-pop mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-accent py-3.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
-            >
-              {game.isLastRound ? "see results" : "next round"}
-              <ChevronRight className="h-4 w-4" />
-              <span className="ml-1 hidden text-xs text-white/70 sm:inline">↵ enter</span>
-            </button>
-          )}
         </>
       )}
     </main>

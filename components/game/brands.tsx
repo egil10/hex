@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { RoundProps } from "@/lib/round";
+import { RoundLayout } from "./round-layout";
 import { ResultBanner, Prompt } from "./feedback";
 import { TextOption } from "./text-option";
 import { Swatch } from "@/components/ui/swatch";
@@ -17,7 +18,7 @@ function makeRound(): Round {
   return { brand, options, correct: options.findIndex((o) => o.name === brand.name) };
 }
 
-export function BrandsRound({ onAnswer, phase }: RoundProps) {
+export function BrandsRound({ onAnswer, phase, footer }: RoundProps) {
   const [round] = useState(makeRound);
   const [picked, setPicked] = useState<number | null>(null);
   const playing = phase === "playing";
@@ -29,10 +30,9 @@ export function BrandsRound({ onAnswer, phase }: RoundProps) {
     onAnswer({ score: correct ? MAX_ROUND_SCORE : 0, hit: correct });
   }
 
-  return (
-    <div>
+  const stage = (
+    <>
       <Prompt>a famous brand, reduced to its colours. which brand?</Prompt>
-
       <div className="flex flex-wrap justify-center gap-3">
         {round.brand.colors.map((c, i) => (
           <Swatch key={i} hex={c} className="h-20 w-20 sm:h-24 sm:w-24" />
@@ -41,7 +41,6 @@ export function BrandsRound({ onAnswer, phase }: RoundProps) {
       <div className="mt-3 text-center text-xs text-muted">
         hint: <span className="text-fg">{round.brand.category}</span>
       </div>
-
       <div className="mt-5 grid grid-cols-2 gap-3">
         {round.options.map((opt, i) => (
           <TextOption
@@ -60,16 +59,19 @@ export function BrandsRound({ onAnswer, phase }: RoundProps) {
           />
         ))}
       </div>
-
-      {!playing && (
-        <ResultBanner
-          correct={picked === round.correct}
-          points={picked === round.correct ? MAX_ROUND_SCORE : 0}
-        >
-          those are <span className="font-medium">{round.brand.name}</span>&apos;s colours{" "}
-          <span className="font-mono text-xs text-muted">{round.brand.colors.join(" ")}</span>.
-        </ResultBanner>
-      )}
-    </div>
+    </>
   );
+
+  const feedback =
+    !playing && picked !== null ? (
+      <ResultBanner
+        correct={picked === round.correct}
+        points={picked === round.correct ? MAX_ROUND_SCORE : 0}
+      >
+        those are <span className="font-medium">{round.brand.name}</span>&apos;s colours{" "}
+        <span className="font-mono text-xs text-muted">{round.brand.colors.join(" ")}</span>.
+      </ResultBanner>
+    ) : undefined;
+
+  return <RoundLayout stage={stage} feedback={feedback} footer={footer} />;
 }

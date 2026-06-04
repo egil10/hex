@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check } from "lucide-react";
 import type { RoundProps } from "@/lib/round";
+import { RoundLayout } from "./round-layout";
 import { ResultBanner, Prompt } from "./feedback";
 import { Swatch } from "@/components/ui/swatch";
 import {
@@ -16,29 +17,57 @@ import {
 } from "@/lib/color";
 import { cn } from "@/lib/cn";
 
+type Difficulty = "easy" | "normal" | "hard";
+const RANGES: Record<Difficulty, [number, number]> = {
+  easy: [12, 22],
+  normal: [5, 10],
+  hard: [2.5, 5],
+};
+const DIFF_KEY = "hexquiz:exact-diff";
+
+function loadDiff(): Difficulty {
+  if (typeof window === "undefined") return "normal";
+  const v = window.localStorage.getItem(DIFF_KEY);
+  return v === "easy" || v === "hard" || v === "normal" ? v : "normal";
+}
+function saveDiff(d: Difficulty) {
+  if (typeof window !== "undefined") window.localStorage.setItem(DIFF_KEY, d);
+}
+
 type Option = { rgb: RGB; dE: number };
 type Round = { target: RGB; options: Option[]; correct: number };
 
-function makeRound(): Round {
+function makeRound(diff: Difficulty): Round {
+  const [lo, hi] = RANGES[diff];
   const target = randomVividRgb();
-  // three near-misses, all a hair off, plus the exact match
   const near: RGB[] = [];
   let guard = 0;
-  while (near.length < 3 && guard++ < 100) {
-    const c = nudge(target, 4 + Math.random() * 6);
-    const d = deltaE(target, c);
-    if (d > 1 && near.every((n) => deltaE(n, c) > 0.5)) near.push(c);
+  while (near.length < 3 && guard++ < 200) {
+    const c = nudge(target, lo + Math.random() * (hi - lo));
+    if (deltaE(target, c) > 0.8 && near.every((n) => deltaE(n, c) > 0.5)) near.push(c);
   }
-  while (near.length < 3) near.push(nudge(target, 6)); // fallback
+  while (near.length < 3) near.push(nudge(target, hi));
   const cands = shuffle([target, ...near]);
-  const options = cands.map((rgb) => ({ rgb, dE: deltaE(target, rgb) }));
-  return { target, options, correct: cands.indexOf(target) };
+  return {
+    target,
+    options: cands.map((rgb) => ({ rgb, dE: deltaE(target, rgb) })),
+    correct: cands.indexOf(target),
+  };
 }
 
-export function ExactRound({ onAnswer, phase }: RoundProps) {
-  const [round] = useState(makeRound);
+export function ExactRound({ onAnswer, phase, footer }: RoundProps) {
+  const [diff, setDiff] = useState<Difficulty>(loadDiff);
+  const [round, setRound] = useState<Round>(() => makeRound(loadDiff()));
   const [picked, setPicked] = useState<number | null>(null);
   const playing = phase === "playing";
+
+  function chooseDiff(d: Difficulty) {
+    if (!playing) return;
+    setDiff(d);
+    saveDiff(d);
+    setRound(makeRound(d));
+    setPicked(null);
+  }
 
   function choose(i: number) {
     if (!playing) return;
@@ -47,9 +76,29 @@ export function ExactRound({ onAnswer, phase }: RoundProps) {
     onAnswer({ score: correct ? MAX_ROUND_SCORE : 0, hit: correct });
   }
 
-  return (
-    <div>
+  const stage = (
+    <>
       <Prompt>one of these is an exact match for the target. which?</Prompt>
+
+      <div className="mb-4 flex items-center justify-center gap-2">
+        <span className="text-[10px] uppercase tracking-wider text-muted">difficulty</span>
+        <div className="inline-flex rounded-full border border-border bg-surface p-0.5">
+          {(["easy", "normal", "hard"] as Difficulty[]).map((d) => (
+            <button
+              key={d}
+              type="button"
+              onClick={() => chooseDiff(d)}
+              disabled={!playing}
+              className={cn(
+                "rounded-full px-3 py-1 text-xs transition-colors disabled:cursor-not-allowed",
+                diff === d ? "bg-accent/10 font-medium text-accent" : "text-muted hover:text-fg",
+              )}
+            >
+              {d}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="mx-auto mb-5 w-1/2">
         <div className="mb-1.5 text-center text-[10px] uppercase tracking-wider text-muted">
@@ -89,17 +138,20 @@ export function ExactRound({ onAnswer, phase }: RoundProps) {
           );
         })}
       </div>
-
-      {!playing && (
-        <ResultBanner
-          correct={picked === round.correct}
-          points={picked === round.correct ? MAX_ROUND_SCORE : 0}
-        >
-          {picked === round.correct
-            ? "perfect eye — that was the exact twin."
-            : "so close. the ringed swatch was the exact match."}
-        </ResultBanner>
-      )}
-    </div>
+    </>
   );
+
+  const feedback =
+    !playing && picked !== null ? (
+      <ResultBanner
+        correct={picked === round.correct}
+        points={picked === round.correct ? MAX_ROUND_SCORE : 0}
+      >
+        {picked === round.correct
+          ? "perfect eye — that was the exact twin."
+          : "so close. the ringed swatch was the exact match."}
+      </ResultBanner>
+    ) : undefined;
+
+  return <RoundLayout stage={stage} feedback={feedback} footer={footer} />;
 }

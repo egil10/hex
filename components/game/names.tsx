@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { RoundProps } from "@/lib/round";
+import { RoundLayout } from "./round-layout";
 import { ResultBanner, Prompt } from "./feedback";
 import { Swatch } from "@/components/ui/swatch";
 import { TextOption } from "./text-option";
@@ -27,7 +28,7 @@ function makeRound(): Round {
   return { swatch, options, correct: options.findIndex((o) => o.name === swatch.name) };
 }
 
-export function NamesRound({ onAnswer, phase }: RoundProps) {
+export function NamesRound({ onAnswer, phase, footer }: RoundProps) {
   const [round] = useState(makeRound);
   const [picked, setPicked] = useState<number | null>(null);
   const playing = phase === "playing";
@@ -39,12 +40,10 @@ export function NamesRound({ onAnswer, phase }: RoundProps) {
     onAnswer({ score: correct ? MAX_ROUND_SCORE : 0, hit: correct });
   }
 
-  return (
-    <div>
+  const stage = (
+    <>
       <Prompt>what is this colour called?</Prompt>
-
       <Swatch hex={round.swatch.hex} className="h-40 w-full" />
-
       <div className="mt-5 grid grid-cols-2 gap-3">
         {round.options.map((opt, i) => (
           <TextOption
@@ -63,16 +62,19 @@ export function NamesRound({ onAnswer, phase }: RoundProps) {
           />
         ))}
       </div>
-
-      {!playing && (
-        <ResultBanner
-          correct={picked === round.correct}
-          points={picked === round.correct ? MAX_ROUND_SCORE : 0}
-        >
-          that swatch is <span className="font-medium">{round.swatch.name}</span>{" "}
-          <span className="font-mono text-xs text-muted">{round.swatch.hex}</span>.
-        </ResultBanner>
-      )}
-    </div>
+    </>
   );
+
+  const feedback =
+    !playing && picked !== null ? (
+      <ResultBanner
+        correct={picked === round.correct}
+        points={picked === round.correct ? MAX_ROUND_SCORE : 0}
+      >
+        that swatch is <span className="font-medium">{round.swatch.name}</span>{" "}
+        <span className="font-mono text-xs text-muted">{round.swatch.hex}</span>.
+      </ResultBanner>
+    ) : undefined;
+
+  return <RoundLayout stage={stage} feedback={feedback} footer={footer} />;
 }

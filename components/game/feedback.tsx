@@ -2,7 +2,6 @@
 
 import { Check, X } from "lucide-react";
 import { Swatch } from "@/components/ui/swatch";
-import { CoordinateCompare } from "./coordinate-compare";
 import {
   deltaE,
   rgbToHex,
@@ -31,20 +30,20 @@ export function LabeledSwatch({
 }
 
 /**
- * Feedback for ΔE-scored modes (guess-hex, rgb-match, spectrum): the two
- * swatches, the ΔE verdict, and the coordinate plot of where each colour sat.
+ * The visual half of ΔE-scored feedback (left pane): your colour beside the
+ * actual one, and the ΔE verdict. The coordinate plot lives separately
+ * (CoordinateCompare) in the right pane.
  */
-export function PrecisionFeedback({ target, guess }: { target: RGB; guess: RGB }) {
+export function PrecisionVisual({ target, guess }: { target: RGB; guess: RGB }) {
   const dE = deltaE(target, guess);
   const score = scoreFromDeltaE(dE);
   const tier = tierFromDeltaE(dE);
   return (
     <div className="animate-pop">
       <div className="grid grid-cols-2 gap-3">
-        <LabeledSwatch label="your colour" hex={rgbToHex(guess)} />
-        <LabeledSwatch label="actual" hex={rgbToHex(target)} />
+        <LabeledSwatch label="your colour" hex={rgbToHex(guess)} height="h-28" />
+        <LabeledSwatch label="actual" hex={rgbToHex(target)} height="h-28" />
       </div>
-
       <div className="mt-3 flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3">
         <div>
           <div className="text-[10px] uppercase tracking-wider text-muted">ΔE distance</div>
@@ -56,8 +55,6 @@ export function PrecisionFeedback({ target, guess }: { target: RGB; guess: RGB }
           <div className="font-mono text-xl font-semibold tabular-nums text-accent">+{score}</div>
         </div>
       </div>
-
-      <CoordinateCompare target={target} guess={guess} />
     </div>
   );
 }
@@ -75,7 +72,7 @@ export function ResultBanner({
   return (
     <div
       className={cn(
-        "animate-pop mt-4 flex items-center gap-3 rounded-xl border px-4 py-3",
+        "animate-pop flex items-center gap-3 rounded-xl border px-4 py-3",
         correct ? "border-accent/40 bg-accent/5" : "border-rose-500/30 bg-rose-500/5",
       )}
     >
@@ -95,7 +92,7 @@ export function ResultBanner({
   );
 }
 
-/** A small prompt line shown above each round. */
+/** A small prompt line shown above each round's stage. */
 export function Prompt({ children }: { children: React.ReactNode }) {
-  return <p className="mb-4 text-center text-sm text-muted">{children}</p>;
+  return <p className="mb-4 text-sm text-muted">{children}</p>;
 }
